@@ -5,6 +5,7 @@
         [0, 0, 0, 0],
         [0, 0, 0, 0],
     ];
+    let score = 0;
 
     function handleKeyDown(event) {
         savePreviousState();
@@ -25,14 +26,18 @@
             for (let i = 1; i < gridValues.length; i++) {
                 if (gridValues[i][j] !== 0) {
                     let row = i;
-                    while (row > 0 && gridValues[row - 1][j] === 0) {
-                        gridValues[row - 1][j] = gridValues[row][j];
-                        gridValues[row][j] = 0;
+                    let merged = false;
+                    while (row > 0 && (gridValues[row - 1][j] === 0 || (gridValues[row - 1][j] === gridValues[row][j] && !merged))) {
+                        if (gridValues[row - 1][j] === gridValues[row][j]) {
+                            gridValues[row - 1][j] *= 2;
+                            score += gridValues[row - 1][j];
+                            gridValues[row][j] = 0;
+                            merged = true;
+                        } else {
+                            gridValues[row - 1][j] = gridValues[row][j];
+                            gridValues[row][j] = 0;
+                        }
                         row--;
-                    }
-                    if (row > 0 && gridValues[row - 1][j] === gridValues[row][j]) {
-                        gridValues[row - 1][j] *= 2;
-                        gridValues[row][j] = 0;
                     }
                 }
             }
@@ -44,14 +49,18 @@
             for (let i = gridValues.length - 2; i >= 0; i--) {
                 if (gridValues[i][j] !== 0) {
                     let row = i;
-                    while (row < gridValues.length - 1 && gridValues[row + 1][j] === 0) {
-                        gridValues[row + 1][j] = gridValues[row][j];
-                        gridValues[row][j] = 0;
+                    let merged = false;
+                    while (row < gridValues.length - 1 && (gridValues[row + 1][j] === 0 || (gridValues[row + 1][j] === gridValues[row][j] && !merged))) {
+                        if (gridValues[row + 1][j] === gridValues[row][j]) {
+                            gridValues[row + 1][j] *= 2;
+                            score += gridValues[row + 1][j];
+                            gridValues[row][j] = 0;
+                            merged = true;
+                        } else {
+                            gridValues[row + 1][j] = gridValues[row][j];
+                            gridValues[row][j] = 0;
+                        }
                         row++;
-                    }
-                    if (row < gridValues.length - 1 && gridValues[row + 1][j] === gridValues[row][j]) {
-                        gridValues[row + 1][j] *= 2;
-                        gridValues[row][j] = 0;
                     }
                 }
             }
@@ -63,14 +72,18 @@
             for (let j = 1; j < gridValues[i].length; j++) {
                 if (gridValues[i][j] !== 0) {
                     let col = j;
-                    while (col > 0 && gridValues[i][col - 1] === 0) {
-                        gridValues[i][col - 1] = gridValues[i][col];
-                        gridValues[i][col] = 0;
+                    let merged = false;
+                    while (col > 0 && (gridValues[i][col - 1] === 0 || (gridValues[i][col - 1] === gridValues[i][col] && !merged))) {
+                        if (gridValues[i][col - 1] === gridValues[i][col]) {
+                            gridValues[i][col - 1] *= 2;
+                            score += gridValues[i][col - 1];
+                            gridValues[i][col] = 0;
+                            merged = true;
+                        } else {
+                            gridValues[i][col - 1] = gridValues[i][col];
+                            gridValues[i][col] = 0;
+                        }
                         col--;
-                    }
-                    if (col > 0 && gridValues[i][col - 1] === gridValues[i][col]) {
-                        gridValues[i][col - 1] *= 2;
-                        gridValues[i][col] = 0;
                     }
                 }
             }
@@ -82,14 +95,18 @@
             for (let j = gridValues[i].length - 2; j >= 0; j--) {
                 if (gridValues[i][j] !== 0) {
                     let col = j;
-                    while (col < gridValues[i].length - 1 && gridValues[i][col + 1] === 0) {
-                        gridValues[i][col + 1] = gridValues[i][col];
-                        gridValues[i][col] = 0;
+                    let merged = false;
+                    while (col < gridValues[i].length - 1 && (gridValues[i][col + 1] === 0 || (gridValues[i][col + 1] === gridValues[i][col] && !merged))) {
+                        if (gridValues[i][col + 1] === gridValues[i][col]) {
+                            gridValues[i][col + 1] *= 2;
+                            score += gridValues[i][col + 1];
+                            gridValues[i][col] = 0;
+                            merged = true;
+                        } else {
+                            gridValues[i][col + 1] = gridValues[i][col];
+                            gridValues[i][col] = 0;
+                        }
                         col++;
-                    }
-                    if (col < gridValues[i].length - 1 && gridValues[i][col + 1] === gridValues[i][col]) {
-                        gridValues[i][col + 1] *= 2;
-                        gridValues[i][col] = 0;
                     }
                 }
             }
@@ -97,7 +114,7 @@
     }
 
     function savePreviousState() {
-        console.log("Saved");
+        localStorage.setItem("previousState", JSON.stringify({ gridValues, score }));
     }
 
     function generateRandomNumber() {
@@ -151,19 +168,52 @@
                 return "#cdc1b4"; // default color for other numbers
         }
     }
+
+    function undo() {
+        const state = JSON.parse(localStorage.getItem("previousState"));
+        score = state.score;
+        gridValues = state.gridValues;
+    }
+
+    function newGame() {}
+
+    function getCellAnimation(rowIndex, colIndex, newRow, newCol) {
+        if (rowIndex === newRow) {
+            if (colIndex > newCol) {
+                return "transition: transform 0.2s ease-in-out; transform: translateX(-100%);";
+            } else if (colIndex < newCol) {
+                return "transition: transform 0.2s ease-in-out; transform: translateX(100%);";
+            }
+        } else if (colIndex === newCol) {
+            if (rowIndex > newRow) {
+                return "transition: transform 0.2s ease-in-out; transform: translateY(-100%);";
+            } else if (rowIndex < newRow) {
+                return "transition: transform 0.2s ease-in-out; transform: translateY(100%);";
+            }
+        }
+        return ""; // No animation
+    }
 </script>
 
 <main>
+    <h4 class="center">Score : {score}</h4>
     <div class="outer-box" role="button" tabindex="0" on:keydown={handleKeyDown}>
         {#each gridValues as row, rowIndex}
             {#each row as cell, colIndex}
-                <div class="inner-box" style="background-color: {getCellColor(cell)};">{cell === 0 ? "" : cell}</div>
+                <div class="inner-box" style="background-color: {getCellColor(cell)}; {getCellAnimation(rowIndex, colIndex)}">
+                    {cell === 0 ? "" : cell}
+                </div>
             {/each}
         {/each}
     </div>
+    <div class="center"><button on:click={undo}>Undo</button><button on:click={newGame}>New Game</button></div>
 </main>
 
 <style>
+    .center {
+        margin: 10px auto;
+        text-align: center;
+    }
     .outer-box {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -186,5 +236,21 @@
         font-size: 24px;
         font-weight: bold;
         border-radius: 5%;
+        transition: transform 0.8s ease-in-out;
+    }
+    .slide-up {
+        transform: translateY(-100%);
+    }
+
+    .slide-down {
+        transform: translateY(100%);
+    }
+
+    .slide-left {
+        transform: translateX(-100%);
+    }
+
+    .slide-right {
+        transform: translateX(100%);
     }
 </style>
