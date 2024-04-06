@@ -1,5 +1,4 @@
 <script>
-    import { spring } from "svelte/motion";
     import { onMount } from "svelte";
 
     let gridValues = [
@@ -15,9 +14,26 @@
     let highestScore = 0;
 
     onMount(() => {
+        window.addEventListener("keydown", handleKeyDown);
+
+        window.addEventListener('touchstart', handleTouchStart);
+        window.addEventListener('touchmove', handleTouchMove);
+        window.addEventListener('touchend', handleTouchEnd);
+        window.addEventListener('touchcancel', handleTouchEnd); 
+
+
         if (localStorage.getItem("highestScore")) {
             highestScore = localStorage.getItem("highestScore");
         }
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+
+            window.removeEventListener('touchstart', handleTouchStart);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
+            window.removeEventListener('touchcancel', handleTouchEnd);
+        };
     });
 
     function startGame() {
@@ -36,15 +52,19 @@
     function handleKeyDown(event) {
         savePreviousState();
         let moved = false;
-        if (event.key === "ArrowUp" || event.key === "w" || event.key === "W") {
+        if (event.key === "ArrowUp" || event.key === "w" || event.key === "W" || event.key === "swipeUp") {
             moved = up();
-        } else if (event.key === "ArrowDown" || event.key === "s" || event.key === "S") {
+        } else if (event.key === "ArrowDown" || event.key === "s" || event.key === "S" || event.key === "swipeDown") {
             moved = down();
-        } else if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
+        } else if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A" || event.key === "swipeLeft") {
             moved = left();
-        } else if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") {
+        } else if (event.key === "ArrowRight" || event.key === "d" || event.key === "D" || event.key === "swipeRight") {
             moved = right();
         }
+        if (event.ctrlKey && event.key === "x") {
+            undo();
+        }
+
         if (moved) {
             fillRandomEmptyBox();
         }
@@ -264,40 +284,76 @@
 
     function undo() {
         const state = JSON.parse(localStorage.getItem("previousState"));
-        score = state.score;
-        gridValues = state.gridValues;
+        if (state) {
+            console.log(state);
+            score = state.score;
+            gridValues = state.gridValues;
+        }
     }
 
-    import { tweened } from "svelte/motion";
-    import { cubicOut } from "svelte/easing";
 
-    // Your component logic...
+    // Mobile touch gestures 
 
-    // Create tweened stores for animation
-    let translateY = tweened(0, { duration: 300, easing: cubicOut });
+    let startX = 0;
+    let startY = 0;
+    let endX = 0;
+    let endY = 0;
 
-    // Define a function to animate the movement of boxes
-    function animateMove(node, { delay }) {
-        // Calculate the target position
-        let targetY = node.getBoundingClientRect().top - node.parentElement.getBoundingClientRect().top;
-
-        // Update the tweened store with the target position
-        translateY.set(targetY);
-
-        return {
-            delay,
-            // Bind the y position using the tweened store
-            css: (t) => `transform: translateY(${translateY * t}px)`,
-        };
+    function handleTouchStart(event) {
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
     }
+
+    function handleTouchMove(event) {
+        endX = event.touches[0].clientX;
+        endY = event.touches[0].clientY;
+    }
+
+    function handleTouchEnd() {
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            // Horizontal swipe
+            if (deltaX > 0) {
+                // Swipe right
+                handleKeyDown({key: "swipeRight"});
+                
+            } else {
+                // Swipe left
+               
+                handleKeyDown({key: "swipeLeft"});
+                
+            }
+        } else {
+            // Vertical swipe
+            if (deltaY > 0) {
+                // Swipe down
+                
+                handleKeyDown({key: "swipeDown"});
+                
+            } else {
+                // Swipe up
+                
+                handleKeyDown({key: "swipeUp"})
+                
+
+            }
+        }
+
+        // Reset touch positions
+        startX = startY = endX = endY = 0;
+    }
+
+
 </script>
 
-<div role="button" tabindex="0" on:keydown={handleKeyDown}>
+<main>
     <h4 class="center">Score : {score} || Highest Score : {highestScore}</h4>
     <div class="outer-box">
         {#each gridValues as row, rowIndex}
             {#each row as cell, colIndex}
-                <div class="inner-box" style="background-color: {getCellColor(cell)};" transition:animateMove={{ delay: colIndex * 100 + rowIndex * 400 }}>
+                <div class="inner-box" style="background-color: {getCellColor(cell)};">
                     {cell === 0 ? "" : cell}
                 </div>
             {/each}
@@ -305,10 +361,10 @@
     </div>
     <div class="center">
         {#if gameRunning}
-            <button class="undo-btn" on:click={undo}>Undo</button>
-            <button class="new-game-btn" on:click={startGame}>New Game</button>
+            <button class="undo-btn" on:click={undo} title="ctrl+x">Undo </button>
+            <button class="new-game-btn" on:click={startGame} title="ctrl+n">New Game</button>
         {:else}
-            <button class="start-game-btn" on:click={startGame}>Start Game</button>
+            <button class="start-game-btn" on:click={startGame} title="ctrl+n">Start Game</button>
         {/if}
         {#if GameEnded}
             <p>Game Ended</p>
@@ -318,7 +374,7 @@
             <p>You Won</p>
         {/if}
     </div>
-</div>
+</main>
 
 <style>
     .center {
