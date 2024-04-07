@@ -12,8 +12,6 @@
     let GameEnded = false;
     let hasWon = false;
     let highestScore = 0;
-    let animatedColIndex = -1;
-    let animatedRowIndex = -1;
 
     onMount(() => {
         window.addEventListener("keydown", handleKeyDown);
@@ -304,7 +302,6 @@
     function undo() {
         const state = JSON.parse(localStorage.getItem("previousState"));
         if (state) {
-            console.log(state);
             score = state.score;
             gridValues = state.gridValues;
         }
