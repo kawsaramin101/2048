@@ -12,27 +12,35 @@
     let GameEnded = false;
     let hasWon = false;
     let highestScore = 0;
+    let animatedColIndex = -1;
+    let animatedRowIndex = -1;
 
     onMount(() => {
         window.addEventListener("keydown", handleKeyDown);
 
-        window.addEventListener('touchstart', handleTouchStart);
-        window.addEventListener('touchmove', handleTouchMove);
-        window.addEventListener('touchend', handleTouchEnd);
-        window.addEventListener('touchcancel', handleTouchEnd); 
-
+        window.addEventListener("touchstart", handleTouchStart);
+        window.addEventListener("touchmove", handleTouchMove);
+        window.addEventListener("touchend", handleTouchEnd);
+        window.addEventListener("touchcancel", handleTouchEnd);
 
         if (localStorage.getItem("highestScore")) {
             highestScore = localStorage.getItem("highestScore");
         }
 
+        if (localStorage.getItem("currentState")) {
+            const currentState = JSON.parse(localStorage.getItem("currentState"));
+            gameRunning = true;
+            gridValues = currentState.gridValues;
+            score = currentState.score;
+        }
+
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
 
-            window.removeEventListener('touchstart', handleTouchStart);
-            window.removeEventListener('touchmove', handleTouchMove);
-            window.removeEventListener('touchend', handleTouchEnd);
-            window.removeEventListener('touchcancel', handleTouchEnd);
+            window.removeEventListener("touchstart", handleTouchStart);
+            window.removeEventListener("touchmove", handleTouchMove);
+            window.removeEventListener("touchend", handleTouchEnd);
+            window.removeEventListener("touchcancel", handleTouchEnd);
         };
     });
 
@@ -47,9 +55,14 @@
         gameRunning = true;
         fillRandomEmptyBox();
         localStorage.removeItem("previousState");
+        localStorage.removeItem("currentState");
     }
 
     function handleKeyDown(event) {
+        if (event.ctrlKey && event.key === "x") {
+            undo();
+            return;
+        }
         savePreviousState();
         let moved = false;
         if (event.key === "ArrowUp" || event.key === "w" || event.key === "W" || event.key === "swipeUp") {
@@ -61,26 +74,32 @@
         } else if (event.key === "ArrowRight" || event.key === "d" || event.key === "D" || event.key === "swipeRight") {
             moved = right();
         }
-        if (event.ctrlKey && event.key === "x") {
-            undo();
+
+        if (event.ctrlKey && event.key === "v") {
+            startGame();
         }
 
         if (moved) {
             fillRandomEmptyBox();
         }
-        hasWon = check2048Box();
+
         if (score > highestScore) {
             highestScore = score;
             localStorage.setItem("highestScore", highestScore);
         }
+        hasWon = check2048Box();
+
         GameEnded = checkIfGameEnded();
-        if (GameEnded) {
-            localStorage.getItem;
-        }
+
+        saveCurrentState();
+    }
+
+    function saveCurrentState() {
+        localStorage.setItem("currentState", JSON.stringify({ gridValues, score }));
     }
 
     function up() {
-        let moved = false; // Variable to track if any move or merge occurred
+        let moved = false;
         for (let j = 0; j < gridValues[0].length; j++) {
             let merged = Array(gridValues.length).fill(false);
             for (let i = 1; i < gridValues.length; i++) {
@@ -291,8 +310,7 @@
         }
     }
 
-
-    // Mobile touch gestures 
+    // Mobile touch gestures
 
     let startX = 0;
     let startY = 0;
@@ -317,35 +335,24 @@
             // Horizontal swipe
             if (deltaX > 0) {
                 // Swipe right
-                handleKeyDown({key: "swipeRight"});
-                
+                handleKeyDown({ key: "swipeRight" });
             } else {
                 // Swipe left
-               
-                handleKeyDown({key: "swipeLeft"});
-                
+                handleKeyDown({ key: "swipeLeft" });
             }
         } else {
             // Vertical swipe
             if (deltaY > 0) {
                 // Swipe down
-                
-                handleKeyDown({key: "swipeDown"});
-                
+                handleKeyDown({ key: "swipeDown" });
             } else {
                 // Swipe up
-                
-                handleKeyDown({key: "swipeUp"})
-                
-
+                handleKeyDown({ key: "swipeUp" });
             }
         }
-
         // Reset touch positions
         startX = startY = endX = endY = 0;
     }
-
-
 </script>
 
 <main>
@@ -353,7 +360,7 @@
     <div class="outer-box">
         {#each gridValues as row, rowIndex}
             {#each row as cell, colIndex}
-                <div class="inner-box" style="background-color: {getCellColor(cell)};">
+                <div class="inner-box" style="background-color: {getCellColor(cell)}; ">
                     {cell === 0 ? "" : cell}
                 </div>
             {/each}
@@ -361,10 +368,12 @@
     </div>
     <div class="center">
         {#if gameRunning}
-            <button class="undo-btn" on:click={undo} title="ctrl+x">Undo </button>
-            <button class="new-game-btn" on:click={startGame} title="ctrl+n">New Game</button>
+            <div class="buttons">
+                <button class="undo-btn" on:click={undo} title="ctrl+x">Undo </button>
+                <button class="new-game-btn" on:click={startGame} title="ctrl+n">New Game</button>
+            </div>
         {:else}
-            <button class="start-game-btn" on:click={startGame} title="ctrl+n">Start Game</button>
+            <button class="start-game-btn" on:click={startGame} title="ctrl+v">Start Game</button>
         {/if}
         {#if GameEnded}
             <p>Game Ended</p>
@@ -374,9 +383,13 @@
             <p>You Won</p>
         {/if}
     </div>
+    <div class="center">By <a href="https://kawsaramin.netlify.app/">MD. Kawsar Amin</a></div>
 </main>
 
 <style>
+    :global(body) {
+        overscroll-behavior-y: contain;
+    }
     .center {
         margin: 10px auto;
         text-align: center;
@@ -403,6 +416,12 @@
         font-size: 24px;
         font-weight: bold;
         border-radius: 5%;
+    }
+    .buttons button {
+        margin-right: 60px;
+    }
+    .buttons button:last-child {
+        margin-right: 0;
     }
     button {
         padding: 10px 20px;
