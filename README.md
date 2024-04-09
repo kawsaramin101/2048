@@ -2,7 +2,7 @@
 
 ### 2048 Game with Undo feature
 
-Play the famous 2048 game on online [2048-undo](https://2048-undo.netlify.app/) or download [Linux .deb or .AppImage](https://github.com/kawsaramin101/2048/releases/tag/Linux), follow the instructions to install.
+Play the famous 2048 game on online [2048-undo](https://2048-undo.netlify.app/) or download [Linux .deb or .AppImage](https://github.com/kawsaramin101/2048/releases/tag/Linux), follow the instructions to install. Windows and Android app coming soon.
 
 ## Rules
 
