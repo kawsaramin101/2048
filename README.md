@@ -13,4 +13,4 @@ Play the famous 2048 game on online [2048-undo](https://2048-undo.netlify.app/) 
 4. If you don't have any space to move boxes the game ends.
 5. You can Undo to last game state using the Undo button.
 
-** Please open a issue on github if you face any problem. **
+**Please open a issue on github if you face any problem.**
