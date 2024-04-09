@@ -1,38 +1,13 @@
-# create-svelte
+# 2048 Game
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+### 2048 Game with Undo feature
 
-## Creating a project
+Play the famous 2048 game on online [2048-undo](https://2048-undo.netlify.app/) or download [Linux .deb or .AppImage](https://github.com/kawsaramin101/2048/releases/tag/Linux), follow the instructions to install.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Rules
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+1. On mobile swipe left, right, up or down to move the boxes. On computer you can use arrow key or AWSD keys.
+2. Move the boxes left, right, up or down. IF box number match during
+   move they marge.
+3. If you can reach 2048, you win. You can continue playing afterward.
+4. If you don't have any space to move boxes the game ends.

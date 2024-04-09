@@ -2,13 +2,13 @@
     import { onMount } from "svelte";
 
     let gridValues = [
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
+        [2, 4, 8, 16],
+        [138, 256, 1024, 2048],
+        [2, 8, 4, 16],
+        [2, 16, 2, 256],
     ];
     let score = 0;
-    let gameRunning = false;
+    let gameRunning = true;
     let GameEnded = false;
     let hasWon = false;
     let highestScore = 0;
@@ -367,13 +367,13 @@
         {#if gameRunning}
             <div class="buttons">
                 <button class="undo-btn" on:click={undo} title="ctrl+x">Undo </button>
-                <button class="new-game-btn" on:click={startGame} title="ctrl+n">New Game</button>
+                <button class="new-game-btn" on:click={startGame} title="ctrl+v">New Game</button>
             </div>
         {:else}
             <button class="start-game-btn" on:click={startGame} title="ctrl+v">Start Game</button>
         {/if}
         {#if GameEnded}
-            <p>Game Ended</p>
+            <h3 style="color: red;">Game Ended</h3>
         {/if}
 
         {#if hasWon}
