@@ -380,7 +380,11 @@
             <p>You Won</p>
         {/if}
     </div>
-    <div class="center">By <a href="https://kawsaramin.netlify.app/">MD. Kawsar Amin</a></div>
+    <div class="center">
+        <a href="https://github.com/kawsaramin101/2048/issues"> Report a problem</a>
+        <br />
+        By <a href="https://kawsaramin.netlify.app/">MD. Kawsar Amin</a>
+    </div>
 </main>
 
 <style>
